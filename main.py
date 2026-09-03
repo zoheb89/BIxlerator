@@ -1,5 +1,4 @@
-
-import os, uuid, json, sqlite3, shutil, threading, traceback
+import os, uuid, json, sqlite3, shutil, threading, traceback, time
 from pathlib import Path
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
@@ -10,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
+import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -53,13 +53,18 @@ def init_db():
         initiated_by TEXT NOT NULL,
         status TEXT NOT NULL,
         output_path TEXT,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        duration_seconds REAL
     )""")
+    try:
+        conn.execute("ALTER TABLE activity ADD COLUMN duration_seconds REAL")
+    except sqlite3.OperationalError:
+        pass
     conn.execute("""CREATE TABLE IF NOT EXISTS counters(
         name TEXT PRIMARY KEY,
         value INTEGER NOT NULL
     )""")
-    defaults={"qvd_assets":1248,"pii_columns":312,"dax_expressions":3905}
+    defaults={"qvd_assets":0,"pii_columns":0,"dax_expressions":0}
     for k,v in defaults.items():
         conn.execute("INSERT OR IGNORE INTO counters(name,value) VALUES(?,?)",(k,v))
     conn.commit(); conn.close()
@@ -68,17 +73,17 @@ init_db()
 
 def add_activity(asset,module,user,status,output=None):
     conn=db()
-    cur=conn.execute("INSERT INTO activity(asset,module,initiated_by,status,output_path,created_at) VALUES(?,?,?,?,?,?)",
-                     (asset,module,user,status,datetime.now(timezone.utc).isoformat(),output))
+    cur=conn.execute("INSERT INTO activity(asset,module,initiated_by,status,output_path,created_at,duration_seconds) VALUES(?,?,?,?,?,?,?)",
+                     (asset,module,user,status,output,datetime.now(timezone.utc).isoformat(),None))
     conn.commit(); aid=cur.lastrowid; conn.close()
     return aid
 
-def update_activity(aid,status,output=None):
+def update_activity(aid,status,output=None,duration_seconds=None):
     conn=db()
-    if output:
-        conn.execute("UPDATE activity SET status=?, output_path=? WHERE id=?",(status,output,aid))
+    if output is not None:
+        conn.execute("UPDATE activity SET status=?, output_path=?, duration_seconds=? WHERE id=?",(status,output,duration_seconds,aid))
     else:
-        conn.execute("UPDATE activity SET status=? WHERE id=?",(status,aid))
+        conn.execute("UPDATE activity SET status=?, duration_seconds=? WHERE id=?",(status,duration_seconds,aid))
     conn.commit(); conn.close()
 
 def inc_counter(name,delta=1):
@@ -87,9 +92,17 @@ def inc_counter(name,delta=1):
 def stats():
     conn=db()
     rows={r["name"]:r["value"] for r in conn.execute("SELECT name,value FROM counters")}
-    activities=[dict(r) for r in conn.execute("SELECT id,asset,module,initiated_by,status,created_at,output_path FROM activity ORDER BY id DESC LIMIT 50")]
+    activities=[dict(r) for r in conn.execute("SELECT id,asset,module,initiated_by,status,created_at,output_path,duration_seconds FROM activity ORDER BY id DESC LIMIT 50")]
+    avg_row=conn.execute("SELECT AVG(duration_seconds) AS avg_seconds FROM activity WHERE status='Completed' AND duration_seconds IS NOT NULL").fetchone()
+    avg_seconds=avg_row["avg_seconds"] if avg_row and avg_row["avg_seconds"] is not None else 0
     conn.close()
-    return rows,activities
+    return rows,activities,avg_seconds
+
+def weekly_count(module):
+    conn=db()
+    row=conn.execute("SELECT COUNT(*) AS n FROM activity WHERE module=? AND status='Completed' AND created_at >= datetime('now','-7 days')",(module,)).fetchone()
+    conn.close()
+    return int(row["n"] or 0)
 
 def safe_name(name):
     name=Path(name or "upload").name
@@ -113,23 +126,42 @@ async def save_upload(upload: UploadFile):
 def submit_job(module,asset,user,fn):
     aid=add_activity(asset,module,user,"Running")
     jid=uuid.uuid4().hex
+    started=time.time()
     with jobs_lock:
-        jobs[jid]={"id":jid,"activity_id":aid,"module":module,"asset":asset,"status":"queued","message":"Queued"}
+        jobs[jid]={"id":jid,"activity_id":aid,"module":module,"asset":asset,"status":"queued","message":"Queued","started_at":started}
     def runner():
-        with jobs_lock: jobs[jid].update(status="running",message="Processing")
+        started_running=time.time()
+        with jobs_lock: jobs[jid].update(status="running",message="Processing",started_at=started_running)
         try:
             output,message=fn()
             if not output:
                 raise RuntimeError(message or "Engine did not produce an output")
             output=str(output)
-            with jobs_lock: jobs[jid].update(status="completed",message=message,output_path=output)
-            update_activity(aid,"Completed",output)
+            duration=round(time.time()-started_running,3)
+            with jobs_lock: jobs[jid].update(status="completed",message=message,output_path=output,duration_seconds=duration)
+            update_activity(aid,"Completed",output,duration)
+            if module == "QVD → CSV":
+                inc_counter("qvd_assets",1)
+            elif module == "Qlik → DAX":
+                inc_counter("dax_expressions",count_dax_expressions(asset))
         except Exception as e:
             msg=str(e)
-            with jobs_lock: jobs[jid].update(status="failed",message=msg)
-            update_activity(aid,"Failed")
+            duration=round(time.time()-started_running,3)
+            with jobs_lock: jobs[jid].update(status="failed",message=msg,duration_seconds=duration)
+            update_activity(aid,"Failed",None,duration)
     executor.submit(runner)
     return jid
+
+def count_dax_expressions(asset):
+    try:
+        source = UPLOAD_DIR
+        matches=sorted(source.glob(f"*_{safe_name(asset)}"), key=lambda p:p.stat().st_mtime, reverse=True)
+        if not matches: return 0
+        df=pd.read_excel(matches[0])
+        if "QLIK EXPRESSIONS" not in df.columns: return 0
+        return int(df["QLIK EXPRESSIONS"].fillna("").astype(str).str.strip().ne("").sum())
+    except Exception:
+        return 0
 
 class TextRequest(BaseModel):
     prompt: str
@@ -143,12 +175,14 @@ def health():
 
 @app.get("/api/dashboard")
 def dashboard():
-    c,a=stats()
+    c,a,avg_seconds=stats()
     return {"kpis":{
-        "qvd_assets_converted":c.get("qvd_assets",1248),
-        "pii_columns_secured":c.get("pii_columns",312),
-        "dax_expressions":c.get("dax_expressions",3905),
-        "avg_conversion_seconds":38
+        "qvd_assets_converted":c.get("qvd_assets",0),
+        "pii_columns_secured":c.get("pii_columns",0),
+        "dax_expressions":c.get("dax_expressions",0),
+        "avg_conversion_seconds":round(avg_seconds,1),
+        "qvd_this_week":weekly_count("QVD → CSV"),
+        "dax_this_week":weekly_count("Qlik → DAX")
     },"activity":a}
 
 @app.get("/api/jobs/{job_id}")
@@ -159,6 +193,7 @@ def job_status(job_id):
     j.pop("output_path", None)
     j.pop("error", None)
     j.pop("encryption_key", None)
+    j.pop("started_at", None)
     return j
 
 @app.get("/api/jobs/{job_id}/download")

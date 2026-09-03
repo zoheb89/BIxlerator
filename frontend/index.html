@@ -1,1 +1,15 @@
-<!doctype html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>BIxlerator — Qlik to Power BI Migration Studio</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
+<!doctype html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>BIxlerator — Qlik to Power BI Migration Studio</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script><script>
+(function(){
+  async function syncKpis(){
+    try{
+      const r=await fetch('/api/dashboard',{cache:'no-store'}); if(!r.ok)return;
+      const d=await r.json(), k=d.kpis||{}, cards=document.querySelectorAll('.kpi-card');
+      if(cards.length<4)return;
+      const values=[k.qvd_assets_converted??0,k.pii_columns_secured??0,k.dax_expressions??0,(k.avg_conversion_seconds??0)+'s'];
+      const notes=[`+${k.qvd_this_week??0} this week`,'actual protected columns',`+${k.dax_this_week??0} this week`,'completed assets'];
+      cards.forEach((card,i)=>{const value=card.querySelector('strong'), note=card.querySelector('small'); if(value)value.textContent=values[i]; if(note)note.textContent=notes[i]});
+    }catch(e){}
+  }
+  setInterval(syncKpis,1000); syncKpis();
+})();
+</script></body></html>

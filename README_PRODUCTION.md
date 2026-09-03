@@ -1,6 +1,6 @@
-# Blxlerator — Production React + FastAPI Build
+# BIxlerator — Production React + FastAPI Build
 
-Blxlerator is an enterprise UI for the existing Qlik-to-Power BI Python engines.
+BIxlerator is an enterprise UI for the existing Qlik-to-Power BI Python engines.
 
 ## Architecture
 React / TypeScript UI → FastAPI → existing Python engines

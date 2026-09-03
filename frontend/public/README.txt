@@ -1,0 +1,1 @@
+Production UI branding assets are stored in this directory.

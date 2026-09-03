@@ -1,0 +1,11 @@
+api:
+  key: ""
+  url: https://api.generative.engine.capgemini.com/v2/llm/invoke
+  model_name: openai.gpt-5.1
+  provider: azure
+
+image_api:
+  key: ""
+  url: https://assets.generative.engine.capgemini.com/v1/generate
+  model_name: gemini-2.5-flash-image
+  provider: vertexai

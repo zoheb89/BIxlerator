@@ -1,0 +1,13 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+python-dotenv==1.1.0
+pandas==2.1.0
+openpyxl==3.1.2
+numpy==1.25.2
+qvd==0.0.15
+pyyaml==6.0.2
+markdown2==2.5.3
+requests==2.32.3
+weasyprint==65.1
+cryptography==44.0.2

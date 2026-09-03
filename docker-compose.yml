@@ -1,0 +1,12 @@
+services:
+  blxlerator:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
+      - ./output_data:/app/output_data
+      - ./blxlerator.db:/app/blxlerator.db
+    restart: unless-stopped

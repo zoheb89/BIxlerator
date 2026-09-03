@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: blxlerator
+    runtime: docker
+    plan: starter
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: BLXLERATOR_LLM_API_KEY
+        sync: false
+      - key: BLXLERATOR_LLM_API_URL
+        value: https://api.generative.engine.capgemini.com/v2/llm/invoke
+      - key: BLXLERATOR_LLM_MODEL
+        value: openai.gpt-5.1
+      - key: BLXLERATOR_IMAGE_API_KEY
+        sync: false
+      - key: BLXLERATOR_IMAGE_API_URL
+        value: https://assets.generative.engine.capgemini.com/v1/generate
+      - key: BLXLERATOR_IMAGE_MODEL
+        value: gemini-2.5-flash-image
+      - key: BLXLERATOR_IMAGE_PROVIDER
+        value: vertexai
+      - key: BLXLERATOR_CORS_ORIGINS
+        value: '*'
+      - key: BLXLERATOR_MAX_UPLOAD_MB
+        value: '500'
+      - key: BLXLERATOR_WORKERS
+        value: '1'

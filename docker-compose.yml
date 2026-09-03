@@ -1,5 +1,5 @@
 services:
-  blxlerator:
+  bixlerator:
     build: .
     ports:
       - "8000:8000"
@@ -8,5 +8,5 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./output_data:/app/output_data
-      - ./blxlerator.db:/app/blxlerator.db
+      - ./bixlerator.db:/app/bixlerator.db
     restart: unless-stopped

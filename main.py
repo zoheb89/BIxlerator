@@ -13,6 +13,20 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
+# Compatibility bridge for the existing Python engines while the canonical
+# BIxlerator BIXLERATOR_* environment names are used by the application.
+for _old, _new in {
+    "BLXLERATOR_LLM_API_KEY": "BIXLERATOR_LLM_API_KEY",
+    "BLXLERATOR_LLM_API_URL": "BIXLERATOR_LLM_API_URL",
+    "BLXLERATOR_LLM_MODEL": "BIXLERATOR_LLM_MODEL",
+    "BLXLERATOR_IMAGE_API_KEY": "BIXLERATOR_IMAGE_API_KEY",
+    "BLXLERATOR_IMAGE_API_URL": "BIXLERATOR_IMAGE_API_URL",
+    "BLXLERATOR_IMAGE_MODEL": "BIXLERATOR_IMAGE_MODEL",
+    "BLXLERATOR_IMAGE_PROVIDER": "BIXLERATOR_IMAGE_PROVIDER",
+}.items():
+    if os.getenv(_new) and not os.getenv(_old):
+        os.environ[_old] = os.getenv(_new)
+
 UPLOAD_DIR = BASE_DIR / "uploads"
 OUTPUT_DIR = BASE_DIR / "output_data"
 FRONTEND_DIR = BASE_DIR / "frontend" / "dist"

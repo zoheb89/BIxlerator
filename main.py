@@ -16,8 +16,8 @@ load_dotenv(BASE_DIR / ".env")
 UPLOAD_DIR = BASE_DIR / "uploads"
 OUTPUT_DIR = BASE_DIR / "output_data"
 FRONTEND_DIR = BASE_DIR / "frontend" / "dist"
-DB_PATH = BASE_DIR / "blxlerator.db"
-MAX_UPLOAD_MB = int(os.getenv("BLXLERATOR_MAX_UPLOAD_MB", "500"))
+DB_PATH = BASE_DIR / "bixlerator.db"
+MAX_UPLOAD_MB = int(os.getenv("BIXLERATOR_MAX_UPLOAD_MB", "500"))
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -26,16 +26,16 @@ import pii_engine
 import doc_generator
 import image_generator
 
-app = FastAPI(title="Blxlerator API", version="1.0.0", docs_url="/api/docs", redoc_url="/api/redoc")
+app = FastAPI(title="BIxlerator API", version="1.0.0", docs_url="/api/docs", redoc_url="/api/redoc")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[x.strip() for x in os.getenv("BLXLERATOR_CORS_ORIGINS", "*").split(",")],
+    allow_origins=[x.strip() for x in os.getenv("BIXLERATOR_CORS_ORIGINS", "*").split(",")],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-executor = ThreadPoolExecutor(max_workers=int(os.getenv("BLXLERATOR_WORKERS", "1")))
+executor = ThreadPoolExecutor(max_workers=int(os.getenv("BIXLERATOR_WORKERS", "1")))
 jobs_lock = threading.Lock()
 jobs = {}
 
@@ -139,7 +139,7 @@ class TextRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"status":"ok","service":"blxlerator-api","version":"1.0.0"}
+    return {"status":"ok","service":"bixlerator-api","version":"1.0.0"}
 
 @app.get("/api/dashboard")
 def dashboard():

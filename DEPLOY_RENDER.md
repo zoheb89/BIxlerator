@@ -1,4 +1,4 @@
-# Deploy Blxlerator publicly on Render
+# Deploy BIxlerator publicly on Render
 
 This build is a single Docker web service: React frontend + FastAPI backend + the existing Python Qlik-to-Power BI engines.
 
@@ -14,8 +14,8 @@ In Render: New → Web Service → connect the repository. Choose Docker. Render
 
 In the Render service Environment settings, add:
 
-- `BLXLERATOR_LLM_API_KEY`
-- `BLXLERATOR_IMAGE_API_KEY`
+- `BIXLERATOR_LLM_API_KEY`
+- `BIXLERATOR_IMAGE_API_KEY`
 
 The non-secret API URLs/models are already defined in `render.yaml`.
 
@@ -25,7 +25,7 @@ Render builds the React application inside Docker, installs the Python dependenc
 
 The resulting URL will be similar to:
 
-`https://blxlerator-<generated-name>.onrender.com`
+`https://bixlerator-<generated-name>.onrender.com`
 
 You can optionally attach a custom domain later.
 

@@ -12,37 +12,34 @@ import re
 # CONFIGURABLE PARAMETERS
 # =========================
 
-# Load configurations from config.yml with fallback
 def load_config(file_path=None):
     file_path = file_path or os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yml")
     try:
         with open(file_path, "r") as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
-        # Return default config if file not found
         return {
             "api": {
-                "key": "your_api_key_here",
-                "url": "your_api_url_here",
-                "model_name": "your_model_name_here"
+                "key": "",
+                "url": "",
+                "model_name": ""
             }
         }
 
-# Access configurations
 config = load_config()
-API_KEY = os.getenv("BLXLERATOR_LLM_API_KEY") or config["api"]["key"]
-API_URL = os.getenv("BLXLERATOR_LLM_API_URL") or config["api"]["url"]
-MODEL_NAME = os.getenv("BLXLERATOR_LLM_MODEL") or config["api"]["model_name"]
+api_config = config.get("api", {}) if isinstance(config, dict) else {}
+API_KEY = os.getenv("BIXLERATOR_LLM_API_KEY") or api_config.get("key", "")
+API_URL = os.getenv("BIXLERATOR_LLM_API_URL") or api_config.get("url", "")
+MODEL_NAME = os.getenv("BIXLERATOR_LLM_MODEL") or api_config.get("model_name", "")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(BASE_DIR, 'output_data')
-LOG_FILE = os.path.join(BASE_DIR, 'log_pii_engine.txt')
+OUTPUT_DIR = os.path.join(BASE_DIR, "output_data")
+LOG_FILE = os.path.join(BASE_DIR, "log_pii_engine.txt")
 
 API_TIMEOUT = 120
 MAX_RETRIES = 3
 RETRY_BASE_DELAY = 5
 
-# Ensure output directory exists
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # =========================
@@ -66,58 +63,59 @@ def setup_logger():
 # =========================
 
 def get_pii_detection_prompt(column_list_str):
-    """
-    Generates a prompt for a GenAI model to detect PII columns based *only* on metadata (column names),
-    adhering to global compliance standards.
-    """
+    """Generate a metadata-only prompt for GenAI-assisted PII classification."""
     return f"""
 You are an expert data privacy and compliance analyst, specializing in global regulations like GDPR, CCPA, and HIPAA.
 Your task is to analyze the following list of column headers from a dataset and identify which columns are likely to contain Personally Identifiable Information (PII).
 
-**CRITICAL INSTRUCTION: You are only given the column names (metadata). You must infer the potential contents based on these names and your knowledge of common data schemas and global PII definitions. No actual data rows are provided.**
+CRITICAL INSTRUCTION: You are only given the column names (metadata). You must infer the potential contents based on these names. No actual data rows are provided.
 
 Analyze the column names for indicators of PII, including but not limited to:
 
-1.  **Direct Identifiers:**
-    *   Full names (e.g., `FullName`, `customer_name`, `name`)
-    *   Email addresses (`email`, `user_email`)
-    *   National identification numbers (`ssn`, `national_id`)
-    *   Phone numbers (`phone`, `contact_number`)
-    *   Mailing or street addresses (`address`, `street`, `city`, `zip_code`)
-    *   Account numbers, credit card numbers (`account_no`, `cc_number`)
-    *   Driver's license, passport numbers (`drivers_license`, `passport_id`)
+1. Direct Identifiers:
+   - Full names (FullName, customer_name, name)
+   - Email addresses (email, user_email)
+   - National identification numbers (ssn, national_id)
+   - Phone numbers (phone, contact_number)
+   - Mailing or street addresses (address, street, city, zip_code)
+   - Account numbers and credit card numbers (account_no, cc_number)
+   - Driver's license and passport numbers (drivers_license, passport_id)
 
-2.  **Indirect or Quasi-Identifiers (can identify a person when combined):**
-    *   Date of birth (`dob`, `birth_date`)
-    *   Full postal codes (`postal_code`)
-    *   Geographic location data (`latitude`, `longitude`, `gps_coords`)
-    *   Usernames, screen names, and user URLs (`username`, `user_id`, `url`)
-    *   IP addresses (`ip_address`)
-    *   Device identifiers (`device_id`, `imei`)
+2. Indirect or Quasi-Identifiers:
+   - Date of birth (dob, birth_date)
+   - Postal codes (postal_code)
+   - Geographic location data (latitude, longitude, gps_coords)
+   - Usernames, screen names and user URLs (username, user_id, url)
+   - IP addresses (ip_address)
+   - Device identifiers (device_id, imei)
 
-3.  **Sensitive PII (Special Category Data under GDPR/HIPAA):**
-    *   Race or ethnic origin (`ethnicity`)
-    *   Health or medical information (`medical_record_no`, `diagnosis`, `health_status`)
-    *   Biometric data (`fingerprint_id`, `face_scan`)
-    *   Genetic data (`dna_sequence`)
-    *   Religious or philosophical beliefs (`religion`)
-    *   Political opinions, trade union membership.
+3. Sensitive PII:
+   - Race or ethnic origin (ethnicity)
+   - Health or medical information (medical_record_no, diagnosis, health_status)
+   - Biometric data (fingerprint_id, face_scan)
+   - Genetic data (dna_sequence)
+   - Religious or philosophical beliefs (religion)
+   - Political opinions and trade union membership
 
 Here is the list of column headers to analyze:
 {column_list_str}
 
-Based on your expert analysis of these names, return a JSON array of the column names that are likely to contain PII. Be conservative; if a column name is ambiguous but could plausibly contain PII (e.g., 'details', 'profile_info'), include it.
-
-**Response Format**: Return ONLY a valid JSON array of the identified PII column names. Do not include explanations or any other text.
-Example: ["name", "email", "phone", "address", "username", "url"]
+Return ONLY a valid JSON array containing the original column names that are likely to contain PII.
+Be conservative; if a column name is ambiguous but could plausibly contain PII, include it.
+Example: ["name", "email", "phone", "address"]
 
 Response:
 """
 
 def call_pii_detection_api(column_list_str):
-    """
-    Call the GenAI API to detect PII columns based on the list of column names.
-    """
+    """Call the configured GenAI endpoint for metadata-only PII classification."""
+    if not API_KEY:
+        raise RuntimeError("PII GenAI is not configured: BIXLERATOR_LLM_API_KEY is missing.")
+    if not API_URL:
+        raise RuntimeError("PII GenAI is not configured: BIXLERATOR_LLM_API_URL is missing.")
+    if not MODEL_NAME:
+        raise RuntimeError("PII GenAI is not configured: BIXLERATOR_LLM_MODEL is missing.")
+
     prompt = get_pii_detection_prompt(column_list_str)
     headers = {
         "accept": "application/json",
@@ -144,8 +142,8 @@ def call_pii_detection_api(column_list_str):
         }
     }
 
-    logging.info("Sending API request for PII detection based on column metadata...")
-    logging.info(f"Prompt sent to API (truncated):\n{prompt[:1000]}...")
+    setup_logger()
+    logging.info("Sending GenAI PII classification request using CSV column metadata only.")
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -153,51 +151,45 @@ def call_pii_detection_api(column_list_str):
             response = requests.post(API_URL, headers=headers, json=payload, timeout=API_TIMEOUT)
             response.raise_for_status()
             resp_json = response.json()
-            logging.info(f"Full API Response:\n{json.dumps(resp_json, indent=2)}")
+            logging.info(f"Full API response received. HTTP {response.status_code}")
 
             output_str = resp_json.get("content", "")
-            pii_columns = []
-            if isinstance(output_str, str):
-                json_match = re.search(r'\[.*?\]', output_str, re.DOTALL)
-                if json_match:
-                    json_str = json_match.group(0)
-                    try:
-                        pii_columns = json.loads(json_str)
-                    except json.JSONDecodeError:
-                        logging.error(f"Failed to parse extracted JSON string: {json_str}")
-                        pii_columns = []
-                else:
-                    logging.warning(f"Could not find a JSON array in the API response content: {output_str}")
-            else:
-                 logging.warning(f"API response content was not a string: {output_str}")
+            if not isinstance(output_str, str):
+                raise RuntimeError("PII GenAI response did not contain string content.")
 
-            logging.info(f"Successfully parsed PII columns from metadata: {pii_columns}")
+            json_match = re.search(r"\[.*?\]", output_str, re.DOTALL)
+            if not json_match:
+                raise RuntimeError(f"PII GenAI response did not contain a JSON array: {output_str[:500]}")
+
+            pii_columns = json.loads(json_match.group(0))
+            if not isinstance(pii_columns, list) or not all(isinstance(x, str) for x in pii_columns):
+                raise RuntimeError("PII GenAI returned an invalid JSON array format.")
+
+            logging.info(f"Successfully classified PII columns: {pii_columns}")
             return pii_columns
 
         except requests.exceptions.RequestException as e:
             logging.error(f"API call failed on attempt {attempt}: {e}")
             if 'response' in locals() and response is not None:
-                logging.error(f"Response Status: {response.status_code}, Response Body: {response.text}")
+                logging.error(f"Response Status: {response.status_code}, Response Body: {response.text[:2000]}")
             if attempt >= MAX_RETRIES:
-                raise
+                raise RuntimeError(f"PII GenAI API request failed after {MAX_RETRIES} attempts: {e}") from e
             time.sleep(RETRY_BASE_DELAY * attempt)
-        except Exception as e:
-            logging.error(f"An unexpected error occurred during API call: {e}")
+        except Exception:
+            logging.exception("PII GenAI classification failed.")
             raise
-    return []
+
+    raise RuntimeError("PII GenAI classification failed unexpectedly.")
 
 # =========================
 # PII COLUMN SCANNING
 # =========================
 
 def scan_pii_columns(file_path):
-    """
-    Scan a CSV file's metadata (column names) to identify columns likely to contain PII.
-    """
+    """Read CSV headers only and classify likely PII columns with GenAI."""
     setup_logger()
     logging.info("=== PII Metadata Scan Engine Execution Started ===")
     try:
-        logging.info(f"Starting PII metadata scan for file: {file_path}")
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -206,22 +198,20 @@ def scan_pii_columns(file_path):
         logging.info(f"Extracted {len(all_columns)} column headers for analysis.")
 
         if not all_columns:
-            logging.warning("CSV file contains no columns. Cannot perform PII scan.")
-            return []
+            raise ValueError("CSV file contains no columns. Cannot perform PII scan.")
 
         column_list_str = json.dumps(all_columns, indent=2)
         pii_columns = call_pii_detection_api(column_list_str)
-
         valid_pii_columns = [col for col in pii_columns if col in all_columns]
+
         if len(valid_pii_columns) != len(pii_columns):
             invalid_cols = set(pii_columns) - set(valid_pii_columns)
-            logging.warning(f"AI returned some columns that do not exist in the source file: {list(invalid_cols)}")
+            logging.warning(f"AI returned columns not present in source: {list(invalid_cols)}")
 
         logging.info(f"PII metadata scan finished. Detected columns: {valid_pii_columns}")
         return valid_pii_columns
-
     except Exception as e:
-        logging.error(f"An error occurred during PII metadata scan: {e}")
+        logging.exception(f"An error occurred during PII metadata scan: {e}")
         raise
 
 # =========================
@@ -232,10 +222,11 @@ def mask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
     setup_logger()
     logging.info("=== PII Masking Execution Started ===")
     try:
-        logging.info(f"Starting PII masking for file: {file_path} on columns: {columns}")
         os.makedirs(output_dir, exist_ok=True)
-        if not os.path.exists(file_path): raise FileNotFoundError(f"File not found: {file_path}")
-        if not columns: raise ValueError("No columns specified for masking")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        if not columns:
+            raise ValueError("No columns specified for masking")
 
         cipher = Fernet(key)
         df = pd.read_csv(file_path, na_filter=False, dtype=str)
@@ -243,9 +234,7 @@ def mask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
         for col in columns:
             col = col.strip()
             if col in df.columns:
-                df[col] = df[col].apply(
-                    lambda x: cipher.encrypt(x.encode()).decode() if x != '' else x
-                )
+                df[col] = df[col].apply(lambda x: cipher.encrypt(x.encode()).decode() if x != '' else x)
                 logging.info(f"Successfully masked column: {col}")
             else:
                 logging.warning(f"Column '{col}' to mask not found in the file")
@@ -253,25 +242,23 @@ def mask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
         base_name = os.path.basename(file_path)
         name_without_ext = os.path.splitext(base_name)[0]
         masked_file_path = os.path.join(output_dir, f"masked_{name_without_ext}.csv")
-
         df.to_csv(masked_file_path, index=False)
-        logging.info(f"Masked file saved at: {masked_file_path}")
         return masked_file_path
     except Exception as e:
-        logging.error(f"Error during PII data masking: {e}")
+        logging.exception(f"Error during PII data masking: {e}")
         raise
 
 def unmask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
     setup_logger()
     logging.info("=== PII Unmasking Execution Started ===")
     try:
-        logging.info(f"Starting PII unmasking for file: {file_path} on columns: {columns}")
         os.makedirs(output_dir, exist_ok=True)
-        if not os.path.exists(file_path): raise FileNotFoundError(f"File not found: {file_path}")
-        if not columns: raise ValueError("No columns specified for unmasking")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+        if not columns:
+            raise ValueError("No columns specified for unmasking")
 
         cipher = Fernet(key)
-        
         df = pd.read_csv(file_path, na_filter=False, dtype=str)
 
         def decrypt_value(val):
@@ -280,7 +267,7 @@ def unmask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
             try:
                 return cipher.decrypt(val.encode()).decode()
             except (InvalidToken, TypeError, AttributeError):
-                logging.warning(f"Could not decrypt value: '{val}'. It might not have been encrypted. Leaving it as is.")
+                logging.warning(f"Could not decrypt value: '{val}'. Leaving it unchanged.")
                 return val
 
         for col in columns:
@@ -294,10 +281,8 @@ def unmask_pii_data(file_path, columns, key, output_dir=OUTPUT_DIR):
         base_name = os.path.basename(file_path)
         name_without_ext = os.path.splitext(base_name)[0]
         unmasked_file_path = os.path.join(output_dir, f"unmasked_{name_without_ext}.csv")
-
         df.to_csv(unmasked_file_path, index=False)
-        logging.info(f"Unmasked file saved at: {unmasked_file_path}")
         return unmasked_file_path
     except Exception as e:
-        logging.error(f"Error during PII data unmasking: {e}")
+        logging.exception(f"Error during PII data unmasking: {e}")
         raise

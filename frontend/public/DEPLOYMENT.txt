@@ -1,1 +1,0 @@
-The production deployment uses the existing six Qlik-to-Power BI capabilities and FastAPI job APIs.

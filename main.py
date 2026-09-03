@@ -21,7 +21,6 @@ MAX_UPLOAD_MB = int(os.getenv("BLXLERATOR_MAX_UPLOAD_MB", "500"))
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# Import the real engines supplied with the original Blxlerator codebase.
 import conversion_engine
 import pii_engine
 import doc_generator
@@ -127,7 +126,7 @@ def submit_job(module,asset,user,fn):
             update_activity(aid,"Completed",output)
         except Exception as e:
             msg=str(e)
-            with jobs_lock: jobs[jid].update(status="failed",message=msg,error=traceback.format_exc())
+            with jobs_lock: jobs[jid].update(status="failed",message=msg)
             update_activity(aid,"Failed")
     executor.submit(runner)
     return jid
@@ -155,8 +154,11 @@ def dashboard():
 @app.get("/api/jobs/{job_id}")
 def job_status(job_id):
     with jobs_lock:
-        j=jobs.get(job_id)
+        j=dict(jobs.get(job_id) or {})
     if not j: raise HTTPException(404,"Job not found")
+    j.pop("output_path", None)
+    j.pop("error", None)
+    j.pop("encryption_key", None)
     return j
 
 @app.get("/api/jobs/{job_id}/download")
@@ -213,7 +215,6 @@ async def pii_mask(file: UploadFile=File(...), columns: str=Form(...), key: str=
         inc_counter("pii_columns",len(selected))
         return out,f"PII protection completed for {len(selected)} selected column(s). Encryption key generated/provided by the caller."
     jid=submit_job("PII Shield",file.filename,user,work)
-    with jobs_lock: jobs[jid]["encryption_key"]=key
     return {"job_id":jid,"encryption_key":key}
 
 @app.post("/api/pii/unmask")
@@ -235,7 +236,6 @@ def uiux_generate(req: TextRequest):
         return paths[0],"Wireframe generated successfully."
     return {"job_id":submit_job("UI/UX Generator","dashboard-wireframe",req.user,work)}
 
-# Serve the built React application from FastAPI in production.
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets"), name="assets")
     @app.get("/{full_path:path}")

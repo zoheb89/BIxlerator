@@ -11,14 +11,11 @@
     })();
   </script>
   <style>
-    /* Keep the original React layout intact. These rules only fix presentation. */
+    /* Preserve the original header layout; functionality is supplied by header-controls.js. */
     .top-right{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:17px!important;white-space:nowrap!important}
     .top-right>*{flex:0 0 auto!important}
     .flow{display:flex!important;visibility:visible!important;opacity:1!important}
     .flow img{display:block!important;visibility:visible!important;opacity:1!important;max-width:440px;width:100%;height:auto!important}
-    .theme-toggle{border:1px solid #bfd2df!important;background:#fff!important;color:#29435f!important;border-radius:8px!important;padding:7px 10px!important;font:600 11px/1 'IBM Plex Sans',sans-serif!important;cursor:pointer!important;min-width:72px!important}
-    .theme-toggle:hover{background:#eef7fb!important;border-color:#9fc4d7!important}
-
     :root[data-theme="dark"]{color-scheme:dark;--bg:#101923;--surface:#17232f;--line:#304352;--text:#e8f0f6;--heading:#f4f8fb;--muted:#a8bac8}
     :root[data-theme="dark"] .shell{background:linear-gradient(135deg,#111c26,#142330)!important}
     :root[data-theme="dark"] .sidebar{background:linear-gradient(180deg,#17232f,#13202b)!important;border-color:#304352!important}
@@ -39,58 +36,12 @@
     :root[data-theme="dark"] .drop{background:#15242f!important;border-color:#4c6978!important}
     :root[data-theme="dark"] .chip{background:#1a2a35!important;border-color:#405564!important;color:#a5b5c0!important}
     :root[data-theme="dark"] .message{background:#192b37!important;border-color:#3b5665!important;color:#a4b6c2!important}
-    :root[data-theme="dark"] .theme-toggle{background:#1b2a36!important;border-color:#48606f!important;color:#d9e5eb!important}
-    @media(max-width:900px){.topbar{padding:0 18px!important}.top-right{gap:9px!important}.top-right>span:not(.pill):not(.avatar){display:none!important}.theme-toggle{min-width:68px!important}}
+    @media(max-width:900px){.topbar{padding:0 18px!important}.top-right{gap:9px!important}}
   </style>
 </head>
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
-
-  <!-- Theme toggle only: the original DATA & AI / ◔ / ? / profile controls are untouched. -->
-  <script>
-    (function(){
-      function install(){
-        var host=document.querySelector('.top-right');
-        if(!host || host.querySelector('.theme-toggle')) return !!host;
-        var theme=document.createElement('button');
-        theme.type='button';
-        theme.className='theme-toggle';
-        theme.setAttribute('aria-label','Toggle Light and Dark theme');
-        function label(){
-          theme.textContent=document.documentElement.dataset.theme==='dark'?'☀ Light':'◐ Dark';
-        }
-        theme.onclick=function(){
-          var next=document.documentElement.dataset.theme==='dark'?'light':'dark';
-          document.documentElement.dataset.theme=next;
-          try{localStorage.setItem('bixlerator-theme',next)}catch(e){}
-          label();
-        };
-        label();
-        host.appendChild(theme);
-        return true;
-      }
-      var tries=0;
-      var timer=setInterval(function(){if(install()||++tries>100)clearInterval(timer)},100);
-    })();
-  </script>
-
-  <!-- Keep the live KPI synchronization from the original production UI. -->
-  <script>
-    (function(){
-      async function syncKpis(){
-        try{
-          var r=await fetch('/api/dashboard',{cache:'no-store'}); if(!r.ok)return;
-          var d=await r.json(),k=d.kpis||{},cards=document.querySelectorAll('.kpi-card');
-          if(cards.length<4)return;
-          var values=[k.qvd_assets_converted??0,k.pii_columns_secured??0,k.dax_expressions??0,(k.avg_conversion_seconds??0)+'s'];
-          var notes=['+'+(k.qvd_this_week??0)+' this week','actual protected columns','+'+(k.dax_this_week??0)+' this week','completed assets'];
-          cards.forEach(function(card,i){var value=card.querySelector('strong'),note=card.querySelector('small');if(value)value.textContent=values[i];if(note)note.textContent=notes[i]});
-        }catch(e){}
-      }
-      syncKpis();
-      setInterval(syncKpis,1000);
-    })();
-  </script>
+  <script src="/header-controls.js"></script>
 </body>
 </html>

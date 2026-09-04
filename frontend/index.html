@@ -1,1 +1,96 @@
-<!doctype html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>BIxlerator — Qlik to Power BI Migration Studio</title><script>(function(){var t='light';try{t=localStorage.getItem('bixlerator-theme')||'light'}catch(e){}document.documentElement.dataset.theme=t})();</script><style>.flow{display:flex!important;visibility:visible!important;opacity:1!important}.flow img{display:block!important;visibility:visible!important;opacity:1!important;max-width:440px;width:100%;height:auto!important}.brand{padding:8px 8px 20px!important;min-height:128px!important;align-items:flex-start!important;background:transparent!important}.brand img{width:248px!important;height:auto!important;max-height:92px!important;object-fit:contain!important;object-position:left center!important;border-radius:0!important;display:block!important}:root[data-theme="dark"]{color-scheme:dark;--bg:#101923;--surface:#17232f;--line:#304352;--text:#e8f0f6;--heading:#f4f8fb;--muted:#a8bac8}:root[data-theme="dark"] .shell{background:linear-gradient(135deg,#111c26,#142330)!important}:root[data-theme="dark"] .sidebar{background:linear-gradient(180deg,#17232f,#13202b)!important;border-color:#304352!important}:root[data-theme="dark"] .topbar{background:rgba(18,29,39,.96)!important;border-color:#304352!important}:root[data-theme="dark"] .hero{background:linear-gradient(120deg,#182a37,#193744 55%,#20283d)!important;border-color:#315b6b!important}:root[data-theme="dark"] .hero h1,:root[data-theme="dark"] .page-title h1,:root[data-theme="dark"] .kpi-card>strong,:root[data-theme="dark"] .module-card h3,:root[data-theme="dark"] .panel h2,:root[data-theme="dark"] .info h3{color:#edf4f8!important}:root[data-theme="dark"] .hero p,:root[data-theme="dark"] .cap small,:root[data-theme="dark"] .kpi-card>span,:root[data-theme="dark"] .module-card p,:root[data-theme="dark"] .info p,:root[data-theme="dark"] .panel-sub,:root[data-theme="dark"] .section-head p,:root[data-theme="dark"] .page-title p{color:#9caebb!important}:root[data-theme="dark"] .nav{color:#b4c3cf!important}:root[data-theme="dark"] .nav:hover{background:#203442!important;color:#fff!important}:root[data-theme="dark"] .nav.active{background:linear-gradient(90deg,#183c4b,#1b303d)!important;color:#6ed5ed!important}:root[data-theme="dark"] .nav-title{color:#91a5b5!important}:root[data-theme="dark"] .sidebar-bottom{background:#1b2b38!important;border-color:#344957!important;color:#b8c8d4!important}:root[data-theme="dark"] .kpi-card,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .module-card,:root[data-theme="dark"] .info{background:linear-gradient(150deg,#182631,#16242f)!important;border-color:#304352!important}:root[data-theme="dark"] .ghost,:root[data-theme="dark"] .secondary{background:#182731!important;border-color:#405866!important;color:#70cee4!important}:root[data-theme="dark"] .toolbar input,:root[data-theme="dark"] .toolbar select,:root[data-theme="dark"] .key-row input{background:#13212c!important;border-color:#415563!important;color:#d5e0e7!important}:root[data-theme="dark"] .drop{background:#15242f!important;border-color:#4c6978!important}:root[data-theme="dark"] .chip{background:#1a2a35!important;border-color:#405564!important;color:#a5b5c0!important}:root[data-theme="dark"] .message{background:#192b37!important;border-color:#3b5665!important;color:#a4b6c2!important}</style></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script><script>(function(){function b(t,c){var x=document.createElement('button');x.type='button';x.className='header-action '+(c||'');x.textContent=t;return x}function m(a,t,h){document.querySelectorAll('.header-menu').forEach(function(x){x.remove()});var x=document.createElement('div');x.className='header-menu';x.innerHTML='<h4>'+t+'</h4>'+h;document.body.appendChild(x);var r=a.getBoundingClientRect();x.style.position='fixed';x.style.zIndex='1000';x.style.left=Math.min(Math.max(12,r.right-x.offsetWidth),innerWidth-x.offsetWidth-12)+'px';x.style.top=r.bottom+8+'px'}function i(){var brand=document.querySelector('.brand'),logo=brand&&brand.querySelector('img'),host=document.querySelector('.top-right');if(!brand||!logo||!host)return false;logo.src='/bixlerator-capgemini-logo.svg';logo.alt='BIxlerator by Capgemini — Enterprise Migration Studio';if(host.dataset.finalUi)return true;host.dataset.finalUi='1';var pill=host.querySelector('.pill');if(pill){var d=b('DATA & AI ▾');pill.replaceWith(d);d.onclick=function(e){e.stopPropagation();m(d,'DATA & AI HUB','<div class="menu-row"><strong>Migration engines</strong><small>QVD → CSV · Qlik → DAX · Qlik Script → Python</small></div><div class="menu-row"><strong>AI capabilities</strong><small>PII classification · documentation · dashboard concepts</small></div>')}}var q=[].slice.call(host.children).find(function(x){return x.textContent.trim()==='?'});if(q){var h=b('?');q.replaceWith(h);h.onclick=function(e){e.stopPropagation();m(h,'HELP & RESOURCES','<div class="menu-row"><strong>How BIxlerator works</strong><small>Use Modules to launch a migration capability and Recent Activity to track jobs.</small></div><a href="/api/docs" target="_blank">Open API Docs →</a>')}}var av=host.querySelector('.avatar'),u=[].slice.call(host.children).find(function(x){return x.textContent.trim().indexOf('Zoheb')===0});if(av)av.remove();if(u)u.remove();var w=b('Workspace ▾');host.appendChild(w);w.onclick=function(e){e.stopPropagation();m(w,'WORKSPACE','<div class="menu-row"><strong>Enterprise Migration Studio</strong><small>BIxlerator workspace · v1.0</small></div><div class="menu-row"><strong>Authentication</strong><small>No sign-in/profile service is enabled in this deployment.</small></div>')};var th=b('');function tl(){th.textContent=document.documentElement.dataset.theme==='dark'?'☀ Light':'◐ Dark'}th.className='header-action theme-toggle';th.onclick=function(){var n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('bixlerator-theme',n)}catch(e){}tl()};tl();host.insertBefore(th,host.firstChild);return true}var n=0,t=setInterval(function(){if(i()||++n>100)clearInterval(t)},100)})();</script></body></html>
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>BIxlerator — Qlik to Power BI Migration Studio</title>
+  <script>
+    (function(){
+      try { document.documentElement.dataset.theme = localStorage.getItem('bixlerator-theme') || 'light' }
+      catch(e) { document.documentElement.dataset.theme = 'light' }
+    })();
+  </script>
+  <style>
+    /* Keep the original React layout intact. These rules only fix presentation. */
+    .top-right{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:17px!important;white-space:nowrap!important}
+    .top-right>*{flex:0 0 auto!important}
+    .flow{display:flex!important;visibility:visible!important;opacity:1!important}
+    .flow img{display:block!important;visibility:visible!important;opacity:1!important;max-width:440px;width:100%;height:auto!important}
+    .theme-toggle{border:1px solid #bfd2df!important;background:#fff!important;color:#29435f!important;border-radius:8px!important;padding:7px 10px!important;font:600 11px/1 'IBM Plex Sans',sans-serif!important;cursor:pointer!important;min-width:72px!important}
+    .theme-toggle:hover{background:#eef7fb!important;border-color:#9fc4d7!important}
+
+    :root[data-theme="dark"]{color-scheme:dark;--bg:#101923;--surface:#17232f;--line:#304352;--text:#e8f0f6;--heading:#f4f8fb;--muted:#a8bac8}
+    :root[data-theme="dark"] .shell{background:linear-gradient(135deg,#111c26,#142330)!important}
+    :root[data-theme="dark"] .sidebar{background:linear-gradient(180deg,#17232f,#13202b)!important;border-color:#304352!important}
+    :root[data-theme="dark"] .topbar{background:rgba(18,29,39,.96)!important;border-color:#304352!important}
+    :root[data-theme="dark"] .crumb{color:#c4d2dc!important}
+    :root[data-theme="dark"] .crumb span{color:#718696!important}
+    :root[data-theme="dark"] .hero{background:linear-gradient(120deg,#182a37,#193744 55%,#20283d)!important;border-color:#315b6b!important}
+    :root[data-theme="dark"] .hero h1,:root[data-theme="dark"] .page-title h1,:root[data-theme="dark"] .kpi-card>strong,:root[data-theme="dark"] .module-card h3,:root[data-theme="dark"] .panel h2,:root[data-theme="dark"] .info h3{color:#edf4f8!important}
+    :root[data-theme="dark"] .hero p,:root[data-theme="dark"] .cap small,:root[data-theme="dark"] .kpi-card>span,:root[data-theme="dark"] .module-card p,:root[data-theme="dark"] .info p,:root[data-theme="dark"] .panel-sub,:root[data-theme="dark"] .section-head p,:root[data-theme="dark"] .page-title p{color:#9caebb!important}
+    :root[data-theme="dark"] .nav{color:#b4c3cf!important}
+    :root[data-theme="dark"] .nav:hover{background:#203442!important;color:#fff!important}
+    :root[data-theme="dark"] .nav.active{background:linear-gradient(90deg,#183c4b,#1b303d)!important;color:#6ed5ed!important}
+    :root[data-theme="dark"] .nav-title{color:#91a5b5!important}
+    :root[data-theme="dark"] .sidebar-bottom{background:#1b2b38!important;border-color:#344957!important;color:#b8c8d4!important}
+    :root[data-theme="dark"] .kpi-card,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .module-card,:root[data-theme="dark"] .info{background:linear-gradient(150deg,#182631,#16242f)!important;border-color:#304352!important}
+    :root[data-theme="dark"] .ghost,:root[data-theme="dark"] .secondary{background:#182731!important;border-color:#405866!important;color:#70cee4!important}
+    :root[data-theme="dark"] .toolbar input,:root[data-theme="dark"] .toolbar select,:root[data-theme="dark"] .key-row input{background:#13212c!important;border-color:#415563!important;color:#d5e0e7!important}
+    :root[data-theme="dark"] .drop{background:#15242f!important;border-color:#4c6978!important}
+    :root[data-theme="dark"] .chip{background:#1a2a35!important;border-color:#405564!important;color:#a5b5c0!important}
+    :root[data-theme="dark"] .message{background:#192b37!important;border-color:#3b5665!important;color:#a4b6c2!important}
+    :root[data-theme="dark"] .theme-toggle{background:#1b2a36!important;border-color:#48606f!important;color:#d9e5eb!important}
+    @media(max-width:900px){.topbar{padding:0 18px!important}.top-right{gap:9px!important}.top-right>span:not(.pill):not(.avatar){display:none!important}.theme-toggle{min-width:68px!important}}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Theme toggle only: the original DATA & AI / ◔ / ? / profile controls are untouched. -->
+  <script>
+    (function(){
+      function install(){
+        var host=document.querySelector('.top-right');
+        if(!host || host.querySelector('.theme-toggle')) return !!host;
+        var theme=document.createElement('button');
+        theme.type='button';
+        theme.className='theme-toggle';
+        theme.setAttribute('aria-label','Toggle Light and Dark theme');
+        function label(){
+          theme.textContent=document.documentElement.dataset.theme==='dark'?'☀ Light':'◐ Dark';
+        }
+        theme.onclick=function(){
+          var next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+          document.documentElement.dataset.theme=next;
+          try{localStorage.setItem('bixlerator-theme',next)}catch(e){}
+          label();
+        };
+        label();
+        host.appendChild(theme);
+        return true;
+      }
+      var tries=0;
+      var timer=setInterval(function(){if(install()||++tries>100)clearInterval(timer)},100);
+    })();
+  </script>
+
+  <!-- Keep the live KPI synchronization from the original production UI. -->
+  <script>
+    (function(){
+      async function syncKpis(){
+        try{
+          var r=await fetch('/api/dashboard',{cache:'no-store'}); if(!r.ok)return;
+          var d=await r.json(),k=d.kpis||{},cards=document.querySelectorAll('.kpi-card');
+          if(cards.length<4)return;
+          var values=[k.qvd_assets_converted??0,k.pii_columns_secured??0,k.dax_expressions??0,(k.avg_conversion_seconds??0)+'s'];
+          var notes=['+'+(k.qvd_this_week??0)+' this week','actual protected columns','+'+(k.dax_this_week??0)+' this week','completed assets'];
+          cards.forEach(function(card,i){var value=card.querySelector('strong'),note=card.querySelector('small');if(value)value.textContent=values[i];if(note)note.textContent=notes[i]});
+        }catch(e){}
+      }
+      syncKpis();
+      setInterval(syncKpis,1000);
+    })();
+  </script>
+</body>
+</html>

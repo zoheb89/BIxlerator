@@ -26,3 +26,7 @@ input::placeholder{color:#91a1af}button:focus-visible,input:focus-visible,select
 .brand{padding:0 8px 18px;align-items:flex-start}.brand img{width:248px;height:82px;object-fit:contain;object-position:left center}.hero-copy{max-width:62%}.flow{margin-left:18px}.flow img{max-width:440px}
 @media(max-width:1150px){.hero-copy{max-width:60%}.flow{margin-left:8px}}
 @media(max-width:800px){.hero-copy{max-width:none}.flow{margin:8px 0 0;height:155px;min-height:155px}}
+
+/* Final locked UI fix: keep the approved Qlik → Power BI hero visual visible. */
+.flow{display:flex!important;visibility:visible!important;opacity:1!important}
+.flow img{display:block!important;visibility:visible!important;opacity:1!important;width:100%;max-width:440px;height:auto;object-fit:contain}

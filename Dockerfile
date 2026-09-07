@@ -4,7 +4,8 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/vite.config.js frontend/index.html ./
 COPY frontend/src ./src
 COPY frontend/public ./public
-RUN npm install --no-audit --no-fund && npm run build
+ARG BUILD_VERSION=20260907-brand-v2
+RUN echo "BIxlerator build ${BUILD_VERSION}" && npm install --no-audit --no-fund && npm run build
 
 FROM python:3.11-slim
 WORKDIR /app

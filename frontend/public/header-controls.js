@@ -31,6 +31,11 @@
       '.header-menu .menu-row:last-child{border-bottom:0}'+
       '.header-menu strong{display:block;color:#17314d;font-weight:600}'+
       '.header-menu small{display:block;color:#73879a;margin-top:3px;line-height:1.35}'+
+      /* The supplied lockup is intentionally treated as one brand surface. */
+      '.brand{display:block!important;padding:0 0 18px!important;margin:3px 8px 20px!important;min-width:0!important}'+
+      '.brand img{display:block!important;width:100%!important;max-width:236px!important;height:auto!important;aspect-ratio:522/142!important;object-fit:contain!important;border-radius:7px!important;box-shadow:0 5px 16px rgba(16,42,67,.10)!important}'+
+      ':root[data-theme="dark"] .brand{border-bottom-color:#304352!important}'+
+      ':root[data-theme="dark"] .brand img{box-shadow:0 7px 20px rgba(0,0,0,.28)!important}'+
       ':root[data-theme="dark"] .header-control{color:#b4c3cf}'+
       ':root[data-theme="dark"] .header-control:hover{background:#203442;border-color:#405866;color:#fff}'+
       ':root[data-theme="dark"] .header-control.data{background:#173946;border-color:#315b6b;color:#72d4e8}'+

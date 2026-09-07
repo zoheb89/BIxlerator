@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 522 142" role="img" aria-label="BIxlerator — Qlik to Power BI Migration Studio">
+<defs>
+ <linearGradient id="x" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00d9ff"/><stop offset=".46" stop-color="#0089df"/><stop offset="1" stop-color="#6b3cff"/></linearGradient>
+ <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#00cfff"/><stop offset="1" stop-color="#713cff"/></linearGradient>
+</defs>
+<rect width="522" height="142" rx="5" fill="#061f39"/>
+<g transform="translate(18 29)">
+ <path d="M7 0h23l24 26L78 0h23L67 43l34 40H78L54 56 30 83H7l35-40L7 0Z" fill="url(#x)"/>
+ <path d="M2 11h12v6H2zm0 13h17v6H2zm0 13h22v6H2zm0 13h17v6H2zm0 13h12v6H2z" fill="url(#glow)"/>
+ <g fill="#35c9ee"><circle cx="3" cy="8" r="2"/><circle cx="3" cy="20" r="2"/><circle cx="3" cy="32" r="2"/><circle cx="3" cy="44" r="2"/><circle cx="3" cy="56" r="2"/><circle cx="11" cy="15" r="1.7"/><circle cx="11" cy="27" r="1.7"/><circle cx="11" cy="39" r="1.7"/><circle cx="11" cy="51" r="1.7"/></g>
+</g>
+<text x="128" y="62" font-family="Arial,Helvetica,sans-serif" font-size="43" font-weight="700" fill="#ffffff" letter-spacing="-.8">BIxlerator</text>
+<text x="129" y="99" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="500" fill="#91a9c2">Qlik to Power BI Migration Studio</text>
+</svg>

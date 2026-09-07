@@ -40,7 +40,7 @@ function App(){
 function Sidebar({view,nav}){
  const item=(id,label,icon,badge)=><button className={'nav '+(view===id?'active':'')} onClick={()=>nav(id)}><span className="ico">{icon}</span><span>{label}</span>{badge&&<b className="badge-count">{badge}</b>}</button>
  return <aside className="sidebar">
-  <div className="brand"><img src="/bixlerator-brand-logo.svg" alt="BIxlerator by Capgemini"/></div>
+  <div className="brand"><img src="/bixlerator-brand-lockup.svg?v=20260907" alt="BIxlerator by Capgemini"/></div>
   <div className="nav-title">WORKSPACE</div>
   {item('home','Command Center',icons.home)}
   {item('kpi','KPI Dashboard',icons.kpi)}
@@ -78,36 +78,15 @@ function About(){return <><PageTitle title="About this App" sub="BIxlerator is a
        ▼
    FastAPI API
        │
- ┌─────┼─────────┬──────────┐
- ▼     ▼         ▼          ▼
-QVD   GenAI     PII       Docs
-Engine Engine   Engine     Engine
- │      │         │          │
- └──────┴─────────┴──────────┘
-            │
-        Output files`}</pre></Panel></>}
-function Info({title,icon,children}){return <div className="info"><div>{icon}</div><h3>{title}</h3><p>{children}</p></div>}
-function PageTitle({title,sub}){return <div className="page-title"><div><div className="eyebrow dark">BIXLERATOR</div><h1>{title}</h1><p>{sub}</p></div></div>}
-function Panel({title,sub,children}){return <section className="panel">{title&&<><h2>{title}</h2>{sub&&<p className="panel-sub">{sub}</p>}</>}{children}</section>}
+       ├── QVD → CSV
+       ├── PII Shield
+       ├── Qlik → DAX
+       ├── Qlik Script → Python
+       ├── Documentation
+       └── UI/UX Generator`}</pre></Panel></>}
+function PageTitle({title,sub}){return <div className="page-title"><div><div className="eyebrow">BIXLERATOR</div><h1>{title}</h1><p>{sub}</p></div></div>}
+function Info({title,icon,children}){return <div className="info"><div className="info-icon">{icon}</div><div><h3>{title}</h3><p>{children}</p></div></div>}
+function Panel({title,sub,children}){return <section className="panel">{(title||sub)&&<div className="panel-head"><div>{title&&<h2>{title}</h2>}{sub&&<p className="panel-sub">{sub}</p>}</div></div>}{children}</section>}
+function ModuleView({module,back,onJob}){const [file,setFile]=useState(null),[prompt,setPrompt]=useState(''),[status,setStatus]=useState(''),[job,setJob]=useState(null),[download,setDownload]=useState(null);const isPrompt=module.id==='uiux';async function run(){setStatus('Submitting…');let fd=new FormData();if(file)fd.append('file',file);if(isPrompt)fd.append('prompt',prompt);try{const r=await api(module.endpoint||('/api/'+module.id+'/generate'),{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw Error(d.detail||'Request failed');setJob(d);onJob(d.job_id);setStatus('Queued');poll(d.job_id)}catch(e){setStatus(e.message)}}async function poll(id){try{const r=await api('/api/jobs/'+id);const d=await r.json();setJob(d);if(d.status==='completed'){setStatus('Completed');if(d.download_url)setDownload(d.download_url);return}if(d.status==='failed'){setStatus(d.error||'Failed');return}setTimeout(()=>poll(id),1200)}catch(e){setStatus(e.message)}}return <><PageTitle title={module.name} sub={module.desc}/><div className="workspace"><Panel title="Input" sub={isPrompt?'Describe the Power BI dashboard concept you want generated.':'Upload the source asset to begin.'}>{isPrompt?<textarea value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="e.g. Executive sales performance dashboard for regional leaders"/>:<div className="drop"><input type="file" accept={module.accept} onChange={e=>setFile(e.target.files?.[0]||null)}/><strong>{file?file.name:'Choose source file'}</strong><small>{module.accept} · Max upload governed by deployment configuration</small></div>}<div className="actions"><button className="primary" onClick={run} disabled={isPrompt?!prompt:!file}>Run {module.name} →</button><button className="secondary" onClick={back}>Back to Modules</button></div></Panel><Panel title="Execution" sub="Jobs run asynchronously and are tracked in the operational history."><div className="job-state"><span className="live-dot"/>{status||'Ready'}{job?.job_id&&<code>{job.job_id}</code>}</div>{download&&<a className="download" href={download}>Download output →</a>}</Panel></div></>}
 
-function ModuleView({module,back,onJob}){
- const [file,setFile]=useState(null),[prompt,setPrompt]=useState('Create a modern executive Power BI sales performance dashboard with KPI cards, revenue trend, regional performance and a clean enterprise layout.'),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[job,setJob]=useState(null)
- const [piiCols,setPiiCols]=useState([]),[selected,setSelected]=useState([]),[key,setKey]=useState('')
- async function submit(){
-  if(module.id==='pii') return
-  if(module.id==='uiux'){
-   if(!prompt.trim())return setMsg('Enter a dashboard prompt first.')
-   setBusy(true);setMsg('')
-   try{const r=await api('/api/uiux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,width:1280,height:800,user:'Zoheb'})});const d=await r.json();if(!r.ok)throw Error(d.detail||'Request failed');setJob(d.job_id);onJob(d.job_id);poll(d.job_id)}catch(e){setMsg(e.message);setBusy(false)} return
-  }
-  if(!file)return setMsg('Choose an input file first.')
-  const fd=new FormData();fd.append('file',file);fd.append('user','Zoheb');setBusy(true);setMsg('')
-  try{const r=await api(module.endpoint,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw Error(d.detail||'Request failed');setJob(d.job_id);onJob(d.job_id);poll(d.job_id)}catch(e){setMsg(e.message);setBusy(false)}
- }
- async function poll(id){let done=false;while(!done){await new Promise(r=>setTimeout(r,1500));const r=await api('/api/jobs/'+id);const d=await r.json();setJob(d);if(['completed','failed'].includes(d.status)){done=true;setBusy(false);setMsg(d.message||d.status)}}}
- async function scan(){if(!file)return setMsg('Choose a CSV first.');const fd=new FormData();fd.append('file',file);setBusy(true);try{const r=await api('/api/pii/scan',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw Error(d.detail);setPiiCols(d.columns||[]);setSelected(d.columns||[]);setMsg(d.note||'Classification completed.')}catch(e){setMsg(e.message)}finally{setBusy(false)}}
- async function mask(){if(!file||!selected.length)return setMsg('Upload a CSV and select columns.');const fd=new FormData();fd.append('file',file);fd.append('columns',selected.join(','));fd.append('key',key);fd.append('user','Zoheb');setBusy(true);try{const r=await api('/api/pii/mask',{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw Error(d.detail);setKey(d.encryption_key);setJob(d.job_id);onJob(d.job_id);poll(d.job_id)}catch(e){setMsg(e.message);setBusy(false)}}
- const isPii=module.id==='pii'
- return <><button className="back" onClick={back}>← Modules</button><PageTitle title={module.name} sub={module.desc}/><div className="workspace"><Panel title={isPii?'PII classification & protection':'Source file'} sub={isPii?'Classification is GenAI-assisted and based on the existing engine’s column metadata workflow.':'Upload a source asset and run the real Python conversion engine.'}>{module.id==='uiux'?<div className="prompt-box"><label>Dashboard brief</label><textarea value={prompt} onChange={e=>setPrompt(e.target.value)} /><button className="primary full" onClick={submit} disabled={busy}>{busy?'Generating…':'Generate Power BI concept'}</button></div>:<div className="drop"><input type="file" accept={module.accept} onChange={e=>setFile(e.target.files[0])}/><div className="drop-icon">⇧</div><strong>{file?file.name:'Drop a file here or browse'}</strong><small>{file?`${(file.size/1024/1024).toFixed(2)} MB`:module.accept}</small></div>}{isPii?<><div className="actions"><button className="primary" onClick={scan} disabled={busy}>Run GenAI PII classification</button></div>{piiCols.length>0&&<><h3 className="mini-title">Detected columns</h3><div className="chips">{piiCols.map(c=><button key={c} className={selected.includes(c)?'chip selected':'chip'} onClick={()=>setSelected(x=>x.includes(c)?x.filter(y=>y!==c):[...x,c])}>{c}</button>)}</div><div className="key-row"><input value={key} onChange={e=>setKey(e.target.value)} placeholder="Optional Fernet key — leave blank to generate"/><button className="secondary" onClick={mask} disabled={busy}>Protect selected values</button></div></>}</>:module.id!=='uiux'&&<button className="primary full" onClick={submit} disabled={busy}>{busy?'Processing…':'Run '+module.name}</button>}</Panel><Panel title="Execution" sub="Live job status from FastAPI." ><div className="exec"><div><span>Engine</span><strong>Python · {module.id.toUpperCase()}</strong></div><div><span>Status</span><strong className={busy?'running':''}>{job?.status||'Ready'}</strong></div>{msg&&<div className="message">{msg}</div>}{job?.status==='completed'&&<a className="download" href={'/api/jobs/'+job.id+'/download'}>Download generated output →</a>}</div></Panel></div></>
-}
 createRoot(document.getElementById('root')).render(<App/>)
